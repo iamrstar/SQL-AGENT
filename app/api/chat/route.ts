@@ -6,7 +6,15 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model: groq('qwen/qwen3-32b'),
-    messages: convertToModelMessages(messages),
+     messages: [
+    {
+      role: 'system',
+      content: 'Do not reveal your internal reasoning or chain-of-thought. Respond with only the final answer.',
+    },
+    ...convertToModelMessages(messages),
+  ],
+    
+    
   });
 
   return result.toUIMessageStreamResponse();
