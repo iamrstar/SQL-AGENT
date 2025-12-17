@@ -1,8 +1,8 @@
 import { streamText, UIMessage, tool, convertToModelMessages,stepCountIs } from 'ai';
 import { groq } from '@ai-sdk/groq';
-import { mistral } from '@ai-sdk/mistral';
+// import { mistral } from '@ai-sdk/mistral';
 import { z } from 'zod';
-import { log } from 'console';
+// import { log } from 'console';
 import { db } from '@/app/db/db';
 export async function POST(req: Request) {
   const { messages }: { messages: UIMessage[] } = await req.json();
@@ -12,18 +12,18 @@ export async function POST(req: Request) {
   2. schema tool - call this tool to get database schema which will help you to write SQL queries.
   Rules:
   - Generate ONLY SELECT queries (no INSERT, UPDATE, DELETE, DROP).
-  - Do not include any comments in your response.
-  - Do not include any explanations in your response.
-  -Always use the schema provided by the schema tool.
-  - Return valid SQLite syntax
+- Respond ONLY with SQL or tool calls.
+- Do not include explanations.
 
-  Always respond in a helpful, conversational tone while being technically accurate`;
+  -Always use the schema provided by the schema tool.
+  - Return valid SQLite syntax`;
+
   
   const result = streamText({
     model: groq('qwen/qwen3-32b'),
     messages: convertToModelMessages(messages),
     system:  SYSTEM_PROMPT,
-    stopWhen: stepCountIs(5),
+    stopWhen: stepCountIs(8),
      tools: {
       schema: tool({
         description: 'Get database schema',
@@ -52,20 +52,39 @@ CREATE TABLE sales (
 `;
         },
       }),
-      db: tool({
-        description: 'Call this tool to query on a database',
-        inputSchema: z.object({
-          query: z.string().describe('The SQL query to be ran'),
-        }),
-        execute: async ({ query }) => {
-          console.log("Query",query);
-          // ! Important : make sure you sanitize the query / validate the query
-          // string search [delete , update] -> guardrails
-          return await db.run(query);
-          return query; 
+      // db: tool({
+      //   description: 'Call this tool to query on a database',
+      //   inputSchema: z.object({
+      //     query: z.string().describe('The SQL query to be ran'),
+      //   }),
+      //   execute: async ({ query }) => {
+      //     console.log("Query",query);
+      //     // ! Important : make sure you sanitize the query / validate the query
+      //     // string search [delete , update] -> guardrails
+      //     return await db.run(query);
+      //     return query; 
           
-        },
-      }),
+      //   },
+      // }),
+db: tool({
+  description: 'Run a SELECT query on the database',
+  inputSchema: z.object({
+    query: z.string(),
+  }),
+  execute: async ({ query }) => {
+    console.log('Query:', query);
+
+    // 🔒 Guardrails (VERY IMPORTANT)
+    const forbidden = /(insert|update|delete|drop|alter|truncate)/i;
+    if (forbidden.test(query)) {
+      throw new Error('Only SELECT queries are allowed');
+    }
+
+    // ✅ Execute SELECT properly
+    const result = await db.all(query);
+    return result;
+  },
+}),
 
             
     },
