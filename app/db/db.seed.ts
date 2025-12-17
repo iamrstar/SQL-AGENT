@@ -1,8 +1,13 @@
+import 'dotenv/config';
+
 import { db } from './db';
+
 import { productsTable, salesTable } from './schema';
 
 export async function seed() {
   console.log('🌱 Seeding database...');
+
+  const today = new Date().toISOString();
 
   // Insert products
   await db.insert(productsTable).values([
@@ -20,36 +25,26 @@ export async function seed() {
     { name: 'Whiteboard', category: 'Office Supplies', price: 129.99, stock: 25 },
   ]);
 
-  // Insert sales (✅ snake_case — FIXED)
+  // Insert sales (some with today's date)
   await db.insert(salesTable).values([
-    { product_id: 1, quantity: 2, total_amount: 1999.98, customer_name: 'Grace Kim', region: 'North' },
-    { product_id: 2, quantity: 3, total_amount: 77.97, customer_name: 'Henry Chen', region: 'South' },
+    { product_id: 1, quantity: 2, total_amount: 1999.98, customer_name: 'Grace Kim', region: 'North', sale_date: today },
+    { product_id: 2, quantity: 3, total_amount: 77.97, customer_name: 'Henry Chen', region: 'South', sale_date: today },
     { product_id: 3, quantity: 2, total_amount: 150.0, customer_name: 'Ivy Wang', region: 'East' },
-    { product_id: 1, quantity: 1, total_amount: 999.99, customer_name: 'Jack Taylor', region: 'West' },
 
-    { product_id: 4, quantity: 2, total_amount: 599.98, customer_name: 'Aarav Mehta', region: 'North' },
+    { product_id: 4, quantity: 2, total_amount: 599.98, customer_name: 'Aarav Mehta', region: 'North', sale_date: today },
     { product_id: 5, quantity: 1, total_amount: 199.99, customer_name: 'Riya Sharma', region: 'East' },
+
     { product_id: 6, quantity: 1, total_amount: 399.99, customer_name: 'Kabir Singh', region: 'West' },
     { product_id: 7, quantity: 10, total_amount: 59.9, customer_name: 'Neha Gupta', region: 'South' },
 
-    { product_id: 8, quantity: 4, total_amount: 51.96, customer_name: 'Vikram Rao', region: 'North' },
+    { product_id: 8, quantity: 4, total_amount: 51.96, customer_name: 'Vikram Rao', region: 'North', sale_date: today },
     { product_id: 9, quantity: 2, total_amount: 99.98, customer_name: 'Sofia Martinez', region: 'East' },
-    { product_id: 10, quantity: 1, total_amount: 89.99, customer_name: 'Liam Johnson', region: 'West' },
-    { product_id: 11, quantity: 2, total_amount: 299.98, customer_name: 'Emily Brown', region: 'South' },
 
-    { product_id: 12, quantity: 1, total_amount: 129.99, customer_name: 'Noah Wilson', region: 'North' },
-    { product_id: 3, quantity: 5, total_amount: 375.0, customer_name: 'Grace Kim', region: 'North' },
-    { product_id: 2, quantity: 10, total_amount: 259.9, customer_name: 'Henry Chen', region: 'South' },
-    { product_id: 7, quantity: 20, total_amount: 119.8, customer_name: 'Ivy Wang', region: 'East' },
-
-    { product_id: 1, quantity: 3, total_amount: 2999.97, customer_name: 'Arjun Patel', region: 'West' },
-    { product_id: 4, quantity: 1, total_amount: 299.99, customer_name: 'Meera Nair', region: 'South' },
-    { product_id: 9, quantity: 5, total_amount: 249.95, customer_name: 'Daniel Lee', region: 'East' },
+    { product_id: 1, quantity: 3, total_amount: 2999.97, customer_name: 'Arjun Patel', region: 'West', sale_date: today },
     { product_id: 11, quantity: 1, total_amount: 149.99, customer_name: 'Sara Ahmed', region: 'North' },
   ]);
 
   console.log('✅ Database seeded successfully!');
 }
-
 
 seed();
